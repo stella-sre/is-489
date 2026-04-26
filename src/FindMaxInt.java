@@ -8,15 +8,24 @@ public class FindMaxInt {
         System.out.print("Please, enter integer numbers separated by space: ");
 
         String numbers = sc.nextLine();
-        int[] intArray = convertStringArrayToIntArray(numbers.split("\\s+"));
-        int maxInt = findMaxIntInArray(intArray);
 
-        System.out.println("*** Initial Array ***");
-        System.out.println(Arrays.toString(intArray));
-        System.out.println("*** Max number in array ***");
-        System.out.println(maxInt);
+        try {
+            int[] intArray = convertStringArrayToIntArray(numbers.split("\\s+"));
+            int maxInt = findMaxIntInArray(intArray);
 
-        sc.close();
+            System.out.println("*** Initial Array ***");
+            System.out.println(Arrays.toString(intArray));
+            System.out.println("*** Max number in array ***");
+            System.out.println(maxInt);
+
+        } catch (NumberFormatException e) {
+            System.err.println("Error: invalid value detected → " + e.getMessage());
+            System.err.println("Please enter only integer numbers separated by spaces.");
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.err.println("Error: no numbers were entered.");
+        } finally {
+            sc.close();
+        }
     }
 
     public static int findMaxIntInArray(int[] intArray) {
