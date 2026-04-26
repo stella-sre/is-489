@@ -7,9 +7,8 @@ public class ArrayExtension {
     public static final int MULTIPLIER = 2;
 
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
 
-        try {
+        try (Scanner sc = new Scanner(System.in)) {
             System.out.print("Please, enter length of initial array: ");
             int baseArrayLength = sc.nextInt();
 
@@ -30,8 +29,6 @@ public class ArrayExtension {
             System.err.println("Error: invalid input. Please enter an integer number only.");
         } catch (Exception e) {
             System.err.println("Error: unexpected problem → " + e.getMessage());
-        } finally {
-            sc.close();
         }
     }
 
