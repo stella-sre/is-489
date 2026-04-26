@@ -5,11 +5,10 @@ public class FindMaxInt {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        System.out.print("Please, enter integer numbers separated by space: ");
 
-        String numbers = sc.nextLine();
-
-        try {
+        try (sc) {
+            System.out.print("Please, enter integer numbers separated by space: ");
+            String numbers = sc.nextLine();
             int[] intArray = convertStringArrayToIntArray(numbers.split("\\s+"));
             int maxInt = findMaxIntInArray(intArray);
 
@@ -23,8 +22,6 @@ public class FindMaxInt {
             System.err.println("Please enter only integer numbers separated by spaces.");
         } catch (ArrayIndexOutOfBoundsException e) {
             System.err.println("Error: no numbers were entered.");
-        } finally {
-            sc.close();
         }
     }
 

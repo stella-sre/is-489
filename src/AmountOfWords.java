@@ -3,9 +3,8 @@ import java.util.Scanner;
 public class AmountOfWords {
 
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
 
-        try {
+        try (Scanner sc = new Scanner(System.in)) {
             System.out.print("Please, enter any text: ");
             String userInput = sc.nextLine();
 
@@ -19,8 +18,6 @@ public class AmountOfWords {
 
         } catch (Exception e) {
             System.err.println("Error: unexpected problem → " + e.getMessage());
-        } finally {
-            sc.close();
         }
     }
 
