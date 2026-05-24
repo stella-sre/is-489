@@ -1,0 +1,52 @@
+name: CI - Pruebas Unitarias y Cobertura (Go)
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  go-tests:
+    name: Pruebas Unitarias Go
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Obtener código fuente
+        uses: actions/checkout@v4
+
+      - name: Configurar Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: true
+
+      - name: Descargar dependencias
+        run: go mod download
+
+      - name: Ejecutar pruebas unitarias con cobertura
+        run: go test ./payment/... -v -coverprofile=coverage.out -covermode=atomic
+
+      - name: Mostrar reporte de cobertura en consola
+        run: go tool cover -func=coverage.out
+
+      - name: Validar cobertura mínima del 80%
+        run: |
+          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | tr -d '%')
+          echo "Cobertura total: ${COVERAGE}%"
+          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+            echo "❌ Cobertura ${COVERAGE}% es menor al mínimo requerido (80%)"
+            exit 1
+          else
+            echo "✅ Cobertura ${COVERAGE}% supera el mínimo requerido (80%)"
+          fi
+
+      - name: Generar reporte HTML de cobertura
+        run: go tool cover -html=coverage.out -o coverage.html
+
+      - name: Subir reporte de cobertura como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.html
+          retention-days: 7
