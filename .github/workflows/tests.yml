@@ -1,4 +1,4 @@
-name: CI - Pruebas Unitarias y Cobertura (Go)
+name: CI - Sistema de Pagos (TDD)
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   go-tests:
-    name: Pruebas Unitarias Go
+    name: Pruebas Unitarias y Cobertura - Go
     runs-on: ubuntu-latest
 
     steps:
@@ -18,28 +18,42 @@ jobs:
       - name: Configurar Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: "1.23"
           cache: true
 
       - name: Descargar dependencias
         run: go mod download
 
       - name: Ejecutar pruebas unitarias con cobertura
-        run: go test ./payment/... -v -coverprofile=coverage.out -covermode=atomic
+        run: go test ./src/payment/... -v -coverprofile=coverage.out -covermode=atomic
 
-      - name: Mostrar reporte de cobertura en consola
+      - name: Mostrar reporte de cobertura por función
         run: go tool cover -func=coverage.out
 
-      - name: Validar cobertura mínima del 80%
+      - name: Mostrar resumen de cobertura por paquete
         run: |
-          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | tr -d '%')
-          echo "Cobertura total: ${COVERAGE}%"
-          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
-            echo "❌ Cobertura ${COVERAGE}% es menor al mínimo requerido (80%)"
+          echo "Cobertura por paquete:"
+          go test ./src/payment/... -cover
+
+      - name: Validar cobertura mínima (tax 100%, processor ≥80%)
+        run: |
+          TAX_COV=$(go test ./src/payment/tax/... -cover 2>&1 | grep -oE '[0-9]+\.[0-9]+%' | head -1 | tr -d '%')
+          PROC_COV=$(go test ./src/payment/processor/... -cover 2>&1 | grep -oE '[0-9]+\.[0-9]+%' | head -1 | tr -d '%')
+          REF_COV=$(go test ./src/payment/refund/... -cover 2>&1 | grep -oE '[0-9]+\.[0-9]+%' | head -1 | tr -d '%')
+
+          echo "tax        : ${TAX_COV}%"
+          echo "processor  : ${PROC_COV}%"
+          echo "refund     : ${REF_COV}%"
+
+          if (( $(echo "$TAX_COV < 100" | bc -l) )); then
+            echo "❌ tax coverage (${TAX_COV}%) debe ser 100%"
             exit 1
-          else
-            echo "✅ Cobertura ${COVERAGE}% supera el mínimo requerido (80%)"
           fi
+          if (( $(echo "$PROC_COV < 80" | bc -l) )); then
+            echo "❌ processor coverage (${PROC_COV}%) debe ser ≥ 80%"
+            exit 1
+          fi
+          echo "✅ Coberturas mínimas satisfechas"
 
       - name: Generar reporte HTML de cobertura
         run: go tool cover -html=coverage.out -o coverage.html
