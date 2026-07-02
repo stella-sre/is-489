@@ -1,0 +1,57 @@
+name: Go Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Run go mod tidy
+        run: go mod tidy
+        working-directory: ./erp
+
+      - name: Build
+        run: go build ./...
+        working-directory: ./erp
+
+      - name: Test
+        run: go test ./... -v -race -coverprofile=coverage.out
+        working-directory: ./erp
+
+      - name: Display test results
+        run: |
+          echo "## Test Summary"
+          go tool test2json -t ./erp/coverage.out | head -50 || true
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: erp/coverage.out
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Run go vet
+        run: go vet ./...
+        working-directory: ./erp
