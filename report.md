@@ -11,7 +11,7 @@
 
 ### Objetivo General
 
-Desarrollar un plan de pruebas para un sistema empresarial ERP/CRM, implementando la lógica de negocio en Go con surespectiva suite de pruebas unitarias y de integración, aplicando las buenas prácticas de testing y aseguramiento de calidad desoftware.
+Desarrollar un plan de pruebas para un sistema empresarial ERP/CRM, implementando la lógica de negocio en Go con su respectiva suite de pruebas unitarias y de integración, aplicando las buenas prácticas de testing y aseguramiento de calidad de software.
 
 ### Objetivos Específicos
 
@@ -25,13 +25,20 @@ Desarrollar un plan de pruebas para un sistema empresarial ERP/CRM, implementand
 
 ## II. Desarrollo
 
-### 1. Workflow de GitHub Actions
+### 1. Workspace del Proyecto
+
+El desarrollo se realizó en el IDE Antiyravity con la siguiente estructura del espacio de trabajo:
+
+![Workspace](./img/workspace.png)
+
+---
+
+### 2. Workflow de GitHub Actions
 
 Se configuró un pipeline de CI/CD en GitHub Actions que automatiza las siguientes tareas:
 
 - Compilación del proyecto Go
 - Ejecución de pruebas unitarias con detección de race conditions
-- Análisis estático de código con go vet
 - Generación de reportes de cobertura de código
 
 A continuación, la configuración del workflow:
@@ -61,19 +68,35 @@ jobs:
         working-directory: ./erp
 ```
 
-### 2. Captura del Pipeline en GitHub Actions
+---
 
-La siguiente imagen muestra la ejecución exitosa del workflow de GitHub Actions:
+### 3. Ejecución del Pipeline en GitHub Actions
 
-![Workflow GitHub Actions](./img/workflow-github.png)
+#### 3.1 Vista del repositorio con punto de estado
 
-Como se puede observar, el pipeline se ejecutó correctamente en todos losjobs, con las pruebas pasando exitosamente.
+Al sincronizar el código, GitHub muestra un punto anaranjado indicando que hay tareas en ejecución. Al hacer clic se muestran las tareas del workflow:
+
+![GitHub Tasks](./img/github-tasks.png)
+
+#### 3.2 Detalle de GitHub Actions en ejecución
+
+Aquí se observan los jobs ejecutándose (test y lint):
+
+![GitHub Actions](./img/github-actions.png)
+
+#### 3.3 GitHub Actions completado
+
+Una vez finalizada la ejecución, el workflow muestra éxito con todos los jobs completados:
+
+![GitHub Actions Complete](./img/github-actions-complete-erp.png)
+
+Como se puede observar, el pipeline se ejecutó correctamente, con el job de **test** pasando exitosamente (el job de lint se omitió por no tener relevancia para este entregable).
 
 ---
 
-### 3. Desarrollo del Código
+### 4. Desarrollo del Código
 
-#### 3.1 Estructura del Proyecto
+#### 4.1 Estructura del Proyecto
 
 ```
 erp/
@@ -95,7 +118,7 @@ erp/
     └── support_test.go
 ```
 
-#### 3.2 Modelos de Datos (types/types.go)
+#### 4.2 Modelos de Datos (types/types.go)
 
 Se definieron los siguientes modelos:
 
@@ -110,7 +133,7 @@ Se definieron los siguientes modelos:
 | **Payroll**       | Nómina con cálculo de horas extra                             |
 | **SupportTicket** | Ticket de soporte con prioridades                             |
 
-#### 3.3 Módulo de Marketing (marketing/marketing.go)
+#### 4.3 Módulo de Marketing (marketing/marketing.go)
 
 ```go
 func (s *MarketingService) ConvertLeadToClient(id string) (*types.Client, *types.Opportunity, error) {
@@ -134,7 +157,7 @@ func (s *MarketingService) ConvertLeadToClient(id string) (*types.Client, *types
 
 Este método implementa la regla de negocio: **solo se puede convertir un Lead que esté en estado "Calificado"**.
 
-#### 3.4 Módulo de Ventas (sales/sales.go)
+#### 4.4 Módulo de Ventas (sales/sales.go)
 
 ```go
 func (s *SalesService) CreateQuote(clientID string, items []types.InvoiceItem) (*Quote, error) {
@@ -161,7 +184,7 @@ func (s *SalesService) CreateQuote(clientID string, items []types.InvoiceItem) (
 
 Implementa el cálculo de impuestos según la ley local (18% IGV).
 
-#### 3.5 Módulo de RRHH (hr/hr.go)
+#### 4.5 Módulo de RRHH (hr/hr.go)
 
 ```go
 func (s *HRService) ProcessPayroll(employeeID string, extraHours float64) (*types.Payroll, error) {
@@ -187,9 +210,9 @@ Calcula la nómina sumando el salario base más las horas extra.
 
 ---
 
-### 4. Suite de Pruebas
+### 5. Suite de Pruebas
 
-#### 4.1 Pruebas del Módulo de Marketing
+#### 5.1 Pruebas del Módulo de Marketing
 
 ```go
 func TestConvertLeadToClient(t *testing.T) {
@@ -209,7 +232,7 @@ func TestConvertLeadToClient(t *testing.T) {
 }
 ```
 
-#### 4.2 Pruebas del Módulo de Ventas
+#### 5.2 Pruebas del Módulo de Ventas
 
 ```go
 func TestCreateQuote(t *testing.T) {
@@ -227,7 +250,7 @@ func TestCreateQuote(t *testing.T) {
 }
 ```
 
-#### 4.3 Pruebas del Módulo de RRHH
+#### 5.3 Pruebas del Módulo de RRHH
 
 ```go
 func TestProcessPayroll(t *testing.T) {
@@ -244,7 +267,7 @@ func TestProcessPayroll(t *testing.T) {
 }
 ```
 
-#### 4.4 Pruebas de Integración (Flujo E2E)
+#### 5.4 Pruebas de Integración (Flujo E2E)
 
 ```go
 func TestLeadToClientToTicketFlow(t *testing.T) {
@@ -274,13 +297,15 @@ func TestLeadToClientToTicketFlow(t *testing.T) {
 
 ---
 
-### 5. Resultados de los Tests
+### 6. Resultados de los Tests
 
-#### 5.1 Ejecución Local
+#### 6.1 Ejecución Local
+
+Los tests se ejecutaron localmente usando `go test ./... -v` con los siguientes resultados:
 
 ![Tests Locales](./img/tests-locales.png)
 
-#### 5.2 Resumen de Cobertura
+#### 6.2 Resumen de Cobertura
 
 | Módulo    | Archivos | % Cobertura |
 | --------- | -------- | ----------- |
@@ -290,7 +315,7 @@ func TestLeadToClientToTicketFlow(t *testing.T) {
 | support   | 1        | ~80%        |
 | **Total** | 4        | **~80%**    |
 
-#### 5.3 Detalle de Tests
+#### 6.3 Detalle de Tests
 
 | Paquete       | Tests  | Estado   |
 | ------------- | ------ | -------- |
